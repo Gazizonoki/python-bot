@@ -7,8 +7,6 @@ services:
     restart: unless-stopped
     depends_on:
       - database
-    networks:
-      - bridge-nerwork
   database:
     image: cr.yandex/yc/yandex-docker-local-ydb:latest
     container_name: ydb-bot-database
@@ -25,9 +23,7 @@ services:
       - GRPC_TLS_PORT=2135
       - GRPC_PORT=2136
       - MON_PORT=8765
-    networks:
-      - bridge-nerwork
 networks:
-  bridge-nerwork:
+  default:
     name: bridge-nerwork
     external: true

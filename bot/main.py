@@ -1,4 +1,4 @@
-import telebot
+from telebot.async_telebot import AsyncTeleBot
 import ydb
 from random import randint
 from enum import Enum
@@ -13,7 +13,7 @@ class BotState(Enum):
 
 
 token_file = open("token", "r")
-bot = telebot.TeleBot(token_file.read())
+bot = AsyncTeleBot(token_file.read())
 token_file.close()
 
 current_chat_id = ""
@@ -87,13 +87,13 @@ def is_table_exists(driver):
 
 
 @bot.message_handler(commands=["start"])
-def start(message):
+async def start(message):
     global current_chat_id, driver_config
     if current_chat_id != "":
-        bot.send_message(message.chat.id, 'Упс, бот запущен в другом чатике(')
+        await bot.send_message(message.chat.id, 'Упс, бот запущен в другом чатике(')
         return True
     if running_commands_check():
-        bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
+        await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
         return
     driver = ydb.Driver(driver_config)
     driver.wait(timeout=5, fail_fast=True)
@@ -102,62 +102,62 @@ def start(message):
         driver.table_client.session().create().execute_scheme(file.read())
         file.close()
     current_chat_id = message.chat.id
-    bot.send_message(message.chat.id, 'Сейчас мы узнаем, кто главный петух в этом чатике.')
+    await bot.send_message(message.chat.id, 'Сейчас мы узнаем, кто главный петух в этом чатике.')
 
 
 @bot.message_handler(commands=["stop"])
-def stop(message):
+async def stop(message):
     global current_chat_id, state
     if check_chat(message):
         return
     if running_commands_check():
-        bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
+        await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
         return
-    bot.send_message(message.chat.id, 'Пока')
+    await bot.send_message(message.chat.id, 'Пока')
     current_chat_id = ""
     finish_command()
 
 
 @bot.message_handler(commands=["register"])
-def register(message):
+async def register(message):
     global user_id, state
     if check_chat(message):
         return
     if running_commands_check():
-        bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
+        await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
         return
-    bot.send_message(message.chat.id, 'Введи имя этого петушка:')
+    await bot.send_message(message.chat.id, 'Введи имя этого петушка:')
     user_id = message.from_user.id
     state = BotState.register_username
 
 
 @bot.message_handler(commands=["find"])
-def find(message):
+async def find(message):
     global user_id, state, user_id
     if check_chat(message):
         return
     if running_commands_check():
-        bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
+        await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
         return
-    bot.send_message(message.chat.id, 'Введи имя этого петушка:')
+    await bot.send_message(message.chat.id, 'Введи имя этого петушка:')
     user_id = message.from_user.id
     state = BotState.find_username
 
 
 @bot.message_handler(commands=["battle"])
-def battle(message):
+async def battle(message):
     global user_id, state, battle_first_name, battle_second_name
     if check_chat(message):
         return
     if running_commands_check():
-        bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
+        await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
         return
     session = run()
     file = open("get_names.yql", "r")
     result_set = session.transaction().execute(file.read(), commit_tx=True)
     file.close()
     if len(result_set[0].rows) <= 1:
-        bot.send_message(message.chat.id, "Маловато человек(")
+        await bot.send_message(message.chat.id, "Маловато человек(")
         return
     first_index = randint(1, len(result_set[0].rows) - 1)
     second_index = randint(0, first_index - 1)
@@ -165,16 +165,16 @@ def battle(message):
     battle_second_name = result_set[0].rows[second_index].name
     find_user(battle_first_name, session, message)
     find_user(battle_second_name, session, message)
-    bot.send_message(message.chat.id, "Кто больший петух? Напиши '1' или '2'.")
+    await bot.send_message(message.chat.id, "Кто больший петух? Напиши '1' или '2'.")
     user_id = message.from_user.id
     state = BotState.battle_choose
 
 
 @bot.message_handler(commands=["force_stop"])
-def force_stop(message):
+async def force_stop(message):
     global current_chat_id, state
     if message.from_user.id != 313814979:
-        bot.send_message(message.chat.id, "Недостаточно прав.")
+        await bot.send_message(message.chat.id, "Недостаточно прав.")
         return
     session = run()
     session.drop_table('local/users_table')
@@ -183,7 +183,7 @@ def force_stop(message):
 
 
 @bot.message_handler(content_types=["text"])
-def text_process(message):
+async def text_process(message):
     global user_name, user_id, state, current_chat_id, battle_first_name, battle_second_name
     if message.chat.id != current_chat_id:
         return
@@ -191,7 +191,7 @@ def text_process(message):
         return
     if state == BotState.register_username:
         user_name = message.text
-        bot.send_message(message.chat.id, 'Введи фотку рожи этого петушка:')
+        await bot.send_message(message.chat.id, 'Введи фотку рожи этого петушка:')
         state = BotState.register_photo
         return
     if state == BotState.find_username:
@@ -207,7 +207,7 @@ def text_process(message):
         elif choice == "2":
             name = battle_second_name
         else:
-            bot.send_message(message.chat.id, "По-русски написано, введи '1' или '2'. Давай по новой.")
+            await bot.send_message(message.chat.id, "По-русски написано, введи '1' или '2'. Давай по новой.")
             return
         session = run()
         file = open("update_rating.yql", "r")
@@ -219,21 +219,21 @@ def text_process(message):
             commit_tx=True
         )
         file.close()
-        bot.send_message(message.chat.id, "Спасибо за ответ, ваш голос очень важен для нас.")
+        await bot.send_message(message.chat.id, "Спасибо за ответ, ваш голос очень важен для нас.")
         finish_command()
         return
 
 
 @bot.message_handler(content_types=["photo"])
-def photo_process(message):
+async def photo_process(message):
     global user_name, user_id, state, current_chat_id
     if message.chat.id != current_chat_id:
         return
     if user_id != message.from_user.id:
         return
     if state == BotState.register_photo:
-        photo_info = bot.get_file(message.photo[len(message.photo) - 1].file_id)
-        photo = bot.download_file(photo_info.file_path)
+        photo_info = await bot.get_file(message.photo[len(message.photo) - 1].file_id)
+        photo = await bot.download_file(photo_info.file_path)
         session = run()
         file = open("add_user.yql", "r")
         query = session.prepare(file.read())
@@ -246,7 +246,7 @@ def photo_process(message):
         )
         file.close()
         finish_command()
-        bot.send_message(message.chat.id, 'Оки-доки, петушок добавлен.')
+        await bot.send_message(message.chat.id, 'Оки-доки, петушок добавлен.')
 
 
 bot.infinity_polling()

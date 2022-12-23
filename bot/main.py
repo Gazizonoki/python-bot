@@ -77,8 +77,8 @@ def find_user(name, session, message):
         finish_command()
         return
 
-    bot.send_message(message.chat.id, 'Рейтинг: ' + str(result_sets[0].rows[0].rating))
-    bot.send_photo(message.chat.id, result_sets[0].rows[0].photo)
+    await bot.send_message(message.chat.id, 'Рейтинг: ' + str(result_sets[0].rows[0].rating))
+    await bot.send_photo(message.chat.id, result_sets[0].rows[0].photo)
 
 
 def is_table_exists(driver):

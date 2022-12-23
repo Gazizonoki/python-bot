@@ -1,0 +1,6 @@
+CREATE TABLE users_table (
+    name Utf8,
+    rating Int64,
+    photo String,
+    PRIMARY KEY(name)
+);

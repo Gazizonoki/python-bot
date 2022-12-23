@@ -1,0 +1,3 @@
+DECLARE $user_name as Utf8;
+
+SELECT rating, photo FROM users_table WHERE name = $user_name;

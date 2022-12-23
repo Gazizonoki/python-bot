@@ -1,0 +1,5 @@
+DECLARE $user_name as Utf8;
+DECLARE $photo as String;
+
+UPSERT INTO users_table (name, rating, photo)
+VALUES ($user_name, 0, $photo);

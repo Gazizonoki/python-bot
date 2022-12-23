@@ -260,7 +260,7 @@ async def text_process(message):
         file.close()
         index = 1
         for row in result_set[0].rows:
-            await bot.send_message(message.chat.id, str(index) + ") " + row.name)
+            await bot.send_message(message.chat.id, str(index) + ") " + row.name + ": " + row.rating)
             index += 1
         finish_command()
         return

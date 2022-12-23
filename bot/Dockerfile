@@ -1,6 +1,6 @@
 FROM python:3.9-alpine
 
-WORKDIR /home/gayazovbr
+WORKDIR /home/
 
 COPY main.py .
 COPY add_user.yql .

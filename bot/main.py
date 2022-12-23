@@ -262,9 +262,9 @@ async def text_process(message):
         ans = ""
         for row in result_set[0].rows:
             ans += str(index) + ") Имя: " + row.name + " Рейтинг: " + str(row.rating)
-            index += 1
             if index != len(result_set[0].rows):
                 ans += "\n"
+            index += 1
         await bot.send_message(message.chat.id, ans)
         finish_command()
         return

@@ -31,7 +31,7 @@ driver_config = ydb.DriverConfig("grpc://database:2136", "/local", credentials=y
 def run():
     global driver_config
     driver = ydb.Driver(driver_config)
-    driver.wait(timeout=5, fail_fast=True)
+    driver.async_wait(fail_fast=True).result()
     return driver.table_client.session().create()
 
 
@@ -42,13 +42,13 @@ def running_commands_check():
     return False
 
 
-def check_chat(message):
+async def check_chat(message):
     global current_chat_id
     if current_chat_id == "":
-        bot.send_message(message.chat.id, 'Совсем дурак? Сначала напиши /start, а потом бота юзай, ну и ну.')
+        await bot.send_message(message.chat.id, 'Совсем дурак? Сначала напиши /start, а потом бота юзай, ну и ну.')
         return True
     if message.chat.id != current_chat_id:
-        bot.send_message(message.chat.id, 'Вы кто такие? Я вас не звал!')
+        await bot.send_message(message.chat.id, 'Вы кто такие? Я вас не звал!')
         return True
     return False
 
@@ -97,12 +97,13 @@ async def start(message):
     if running_commands_check():
         await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
         return
+
     driver = ydb.Driver(driver_config)
-    driver.wait(timeout=5, fail_fast=True)
-    if not is_table_exists(driver):
-        file = open("create_table.yql", "r")
-        driver.table_client.session().create().execute_scheme(file.read())
-        file.close()
+    driver.async_wait(fail_fast=True).result()
+    # if not is_table_exists(driver):
+    #     file = open("create_table.yql", "r")
+    #     driver.table_client.session().create().execute_scheme(file.read())
+    #     file.close()
     current_chat_id = message.chat.id
     await bot.send_message(message.chat.id, 'Сейчас мы узнаем, кто главный петух в этом чатике.')
 
@@ -110,7 +111,7 @@ async def start(message):
 @bot.message_handler(commands=["stop"])
 async def stop(message):
     global current_chat_id, state
-    if check_chat(message):
+    if await check_chat(message):
         return
     if running_commands_check():
         await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
@@ -123,7 +124,7 @@ async def stop(message):
 @bot.message_handler(commands=["register"])
 async def register(message):
     global user_id, state
-    if check_chat(message):
+    if await check_chat(message):
         return
     if running_commands_check():
         await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
@@ -136,7 +137,7 @@ async def register(message):
 @bot.message_handler(commands=["find"])
 async def find(message):
     global user_id, state, user_id
-    if check_chat(message):
+    if await check_chat(message):
         return
     if running_commands_check():
         await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
@@ -149,7 +150,7 @@ async def find(message):
 @bot.message_handler(commands=["battle"])
 async def battle(message):
     global user_id, state, battle_first_name, battle_second_name
-    if check_chat(message):
+    if await check_chat(message):
         return
     if running_commands_check():
         await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
@@ -175,7 +176,7 @@ async def battle(message):
 @bot.message_handler(commands=["top"])
 async def top(message):
     global user_id, state, user_id
-    if check_chat(message):
+    if await check_chat(message):
         return
     if running_commands_check():
         await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
@@ -290,4 +291,5 @@ async def photo_process(message):
         await bot.send_message(message.chat.id, 'Оки-доки, петушок добавлен.')
 
 
-bot.infinity_polling()
+if __name__ == '__main__':
+    asyncio.run(bot.polling(non_stop=True))

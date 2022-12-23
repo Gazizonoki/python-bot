@@ -11,6 +11,6 @@ COPY update_rating.yql .
 COPY token .
 
 RUN apk update && pip install pyTelegramBotAPI && python3 -m pip install ydb && pip install six && \
-    pip install packaging
+    pip install packaging && pip install aiohttp
 
 CMD ["python3",  "main.py"]

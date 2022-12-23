@@ -8,7 +8,7 @@ services:
     depends_on:
       - database
     networks:
-      - gaziz_network
+      - bridge_network
   database:
     image: cr.yandex/yc/yandex-docker-local-ydb:latest
     container_name: ydb-bot-database
@@ -26,7 +26,4 @@ services:
       - GRPC_PORT=2136
       - MON_PORT=8765
     networks:
-      - gaziz_network
-networks:
-  gaziz_network:
-    driver: bridge
+      - bridge_network

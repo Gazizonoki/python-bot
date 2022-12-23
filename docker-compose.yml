@@ -29,4 +29,5 @@ services:
       - bridge-nerwork
 networks:
   bridge-nerwork:
+    name: bridge-nerwork
     driver: bridge

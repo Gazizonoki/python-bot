@@ -62,7 +62,7 @@ def finish_command():
     state = BotState.chill
 
 
-def find_user(name, session, message):
+async def find_user(name, session, message):
     file = open("find_user.yql", "r")
     query = session.prepare(file.read())
     result_sets = session.transaction(ydb.SerializableReadWrite()).execute(
@@ -73,7 +73,7 @@ def find_user(name, session, message):
     )
     file.close()
     if len(result_sets[0].rows) == 0:
-        bot.send_message(message.chat.id, 'Это кто?')
+        await bot.send_message(message.chat.id, 'Это кто?')
         finish_command()
         return
 

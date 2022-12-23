@@ -8,6 +8,7 @@ COPY create_table.yql .
 COPY find_user.yql .
 COPY get_names.yql .
 COPY update_rating.yql .
+COPY top_names.yql .
 COPY token .
 
 RUN apk update && pip install pyTelegramBotAPI && python3 -m pip install ydb && pip install six && \

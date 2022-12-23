@@ -1,5 +1,6 @@
 from telebot.async_telebot import AsyncTeleBot
 import ydb
+import asyncio
 from random import randint
 from enum import Enum
 

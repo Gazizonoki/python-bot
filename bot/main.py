@@ -166,8 +166,8 @@ async def battle(message):
     second_index = randint(0, first_index - 1)
     battle_first_name = result_set[0].rows[first_index].name
     battle_second_name = result_set[0].rows[second_index].name
-    find_user(battle_first_name, session, message)
-    find_user(battle_second_name, session, message)
+    await find_user(battle_first_name, session, message)
+    await find_user(battle_second_name, session, message)
     await bot.send_message(message.chat.id, "Кто больший петух? Напиши '1' или '2'.")
     user_id = message.from_user.id
     state = BotState.battle_choose
@@ -213,7 +213,7 @@ async def text_process(message):
     if state == BotState.find_username:
         name = message.text
         session = run()
-        find_user(name, session, message)
+        await find_user(name, session, message)
         finish_command()
         return
     if state == BotState.battle_choose:

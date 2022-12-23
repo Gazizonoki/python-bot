@@ -30,4 +30,4 @@ services:
 networks:
   bridge-nerwork:
     name: bridge-nerwork
-    driver: bridge
+    external: true

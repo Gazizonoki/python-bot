@@ -1,0 +1,3 @@
+DECLARE $top as UInt64;
+
+SELECT name FROM users_table LIMIT $top;

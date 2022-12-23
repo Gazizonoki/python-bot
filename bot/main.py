@@ -10,6 +10,7 @@ class BotState(Enum):
     register_username = 3
     register_photo = 4
     battle_choose = 5
+    top = 6
 
 
 token_file = open("token", "r")
@@ -170,6 +171,19 @@ async def battle(message):
     state = BotState.battle_choose
 
 
+@bot.message_handler(commands=["top"])
+async def top(message):
+    global user_id, state, user_id
+    if check_chat(message):
+        return
+    if running_commands_check():
+        await bot.send_message(message.chat.id, "Ты че сделал? Еще раз увижу, иуп получишь!")
+        return
+    await bot.send_message(message.chat.id, 'Введи сколько людей ты хочешь вывести:')
+    user_id = message.from_user.id
+    state = BotState.top
+
+
 @bot.message_handler(commands=["force_stop"])
 async def force_stop(message):
     global current_chat_id, state
@@ -220,6 +234,32 @@ async def text_process(message):
         )
         file.close()
         await bot.send_message(message.chat.id, "Спасибо за ответ, ваш голос очень важен для нас.")
+        finish_command()
+        return
+    if state == BotState.top:
+        choice = message.text
+        if not choice.isnumeric():
+            await bot.send_message(message.chat.id, "Дебил, число введи.")
+            finish_command()
+            return
+        if int(choice) <= 0:
+            await bot.send_message(message.chat.id, "Дебил, положительное число введи.")
+            finish_command()
+            return
+        session = run()
+        file = open("top_names.yql", "r")
+        query = session.prepare(file.read())
+        result_set = session.transaction(ydb.SerializableReadWrite()).execute(
+            query, {
+                '$top': int(choice)
+            },
+            commit_tx=True
+        )
+        file.close()
+        index = 1
+        for row in result_set[0].rows:
+            await bot.send_message(message.chat.id, str(index) + ") " + row.name)
+            index += 1
         finish_command()
         return
 
